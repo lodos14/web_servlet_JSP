@@ -110,23 +110,63 @@ service 라는 함수는 두 개의 인자를 전해준다. request, response �
     out.println("Hello Servlet!!");
 
 
+## 4. 이클립스를 이용한 서블릿 프로그래밍
+
+- web 프젝트를 만들 때 자신의 WAS 프로그램을 선택하고 만든다.
+- 프로젝트를면 여러 디렉토리 중 WebContent가 home 디렉토리 이다.
+- 자바 코드는 JavaResources의 src에 만든다.
+- 프로젝트 오른쪽 클릭 -> 속성 -> Web Project Settings 에서 Context root로 가상 경로를 지정하면 자신의 프로젝트 이름으로 요청을 하지 않도록 할 수 있다.
+- 서블릿 코드 작성 후 home 디렉토리 WEB-INF 안에 web.xml 파일을 만들어 맵핑을 한 하고 실행하면 3. 과정에서 했던 처리를 알아서 해준다.
+
+
+###4.1 Annotation을 이용한 URL 맵핑
+
+![image](https://user-images.githubusercontent.com/81665608/140028146-7aa560f8-7ca1-47f9-a4ce-54e358993e54.png)
+
+![image](https://user-images.githubusercontent.com/81665608/140028297-7598b006-ac4d-4ad3-83e4-05c42d9cd254.png)
+
+- false : web.xml 외에도 설정한게 있으니 찾아보라는 의미
+- true : 모든 설정은 web.xml에 했다는 의미
+
+## 5. 서블릿 출력 형식을 지정해야 하는 이유
+
+![image](https://user-images.githubusercontent.com/81665608/140032523-c28674bc-db04-45c4-b2d5-1d25c09a4427.png)
+
+### 5.1 한글 출력하기
+
+1. 한글은 2바이트 씩 묶어서 표현이 되는데 톰캣의 경우 1바이트씩 보내고 브라우저는 이게 무슨 말인지 몰라  ?로 보여준다.
+2. 정상적으로 보냈지만 브라우저가 잘못 해석한 경우
+![image](https://user-images.githubusercontent.com/81665608/140033549-37e303bf-4828-4ba0-a4e6-6d5375641885.png)
+
+
+### 해결방법
+
+1. 응답 도구를 이용해서 인코딩 방식을 지정해준다.
+
+  response.setCharacterEncoding("UTF-8"); // UTF-8로 인코딩 할 것이다.
+  
+2. 브라우저에게 UTF-8 로 읽어야 한다고 알려줘야한다.
+
+  response.setContentType("text/html; charset=UTF-8");  // html 형식과 UTF-8 로 읽어라
 
 
 
+  @WebServlet("/hi")
+  public class Nana extends HttpServlet {
 
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
+      response.setCharacterEncoding("UTF-8");
+      response.setContentType("text/html; charset=UTF-8");
 
+      PrintWriter out = response.getWriter();
+      for(int i = 0 ; i < 100 ; i++) {
+        out.println("Hello ~~~ 안녕<br>");			
+      }
+    }	
 
-
-
-
-
-
-
-
-
-
-
+  }
 
 
 
