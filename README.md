@@ -167,12 +167,110 @@ service 라는 함수는 두 개의 인자를 전해준다. request, response �
     }	
 
   }
+  
+
+## 6. GET 요청과 쿼리스트링
+
+- 쿼리 스트링 : 서버에게 문서를 요청하면서 추가적인 옵션을 추가하는것
+
+![image](https://user-images.githubusercontent.com/81665608/140274874-d0e0f5f3-80b7-4646-b6a0-9f26d8debf7d.png)
 
 
+### 6.1 쿼리스트링 기본 값
 
+![image](https://user-images.githubusercontent.com/81665608/140282345-1bc8d223-80b3-42b4-aeaa-9effda5c4f18.png)
 
+하지만 빈 문자열이 오는경우 Integer.parselnt(temp)에서 에러가 발생하므로
 
+  if(temp_ != null && !temp.equals("")) // 빈문자열이 아니다 라는 조건도 추가
+    cnt = Integer.parseInt(temp);
 
+  for(int i=0; i<cnt; i++)
+    out.println(i + 1)+": 안녕 Servlet!!<br>");
 
+#### index.html
 
+  <!DOCTYPE html>
+  <html>
+  <head>
+  <meta charset="UTF-8">
+  <title>Insert title here</title>
+  </head>
+  <body>
+    환영합니다.<br>
+    <a href = "hi">인사하기</a> <br>
+    <a href = "hi?cnt=3">인사하기</a><br>
+  </body>
+  </html>
 
+### 6.2 사용자 입력을 통한 GET 요청
+
+![image](https://user-images.githubusercontent.com/81665608/140290108-a170585e-6f44-4f37-985f-c393ce16daa1.png)
+
+![image](https://user-images.githubusercontent.com/81665608/140290814-a5774b36-4acf-4f0b-a8c8-3291a977a7be.png)
+
+### 6.3 입력할 내용이 많은 경우는 POST 요청
+   
+    // form 속성으로 아래와 같이 method = "post" 를 추가하면
+    // url를 통해서 요청하지 않고 요청 바디에 붙여서 요청하게 된다.
+    // 그러면 주소창에 쿼리 스트링의 값이 노출 되지 않는다.
+    <form action = "notice-reg" method = "post">
+    
+POST를 이용해서 요청하는 경우 한글이 깨지는 현상이 있는데 
+
+    request.setCharacterEncoding("UTF-8"); // 요청도구를 이용해서 UTF-8로 셋팅해준다.
+  
+  
+## 7. 서블릿 필터
+
+- 서블릿 필터란?
+
+사용자 인증이나 로깅과 같은 기능들은 모든 서블릿이나 JSP가 공통적으로 필요로 함.
+
+이러한 공통적인 기능들을 서블릿이 호출되기 전에 수행(전처리)되게 하고 싶거나
+
+서블릿이 호출 되고 난 뒤에 수행(후처리) 하고 싶으면 공통적인 기능들을 서블릿 필터로 구현하면 된다.
+
+![image](https://user-images.githubusercontent.com/81665608/140308655-8f3635f0-f8eb-4118-8e08-457d7f2bc86d.png)
+
+### 7.1 필터 클래스 만들기
+
+    @WebFilter("/")   // 필터도 이런식으로 맵핑 가능
+    public class CharacterEncodingFilter implements Filter { // 인터페이스 필터 추가
+
+      @Override
+      public void doFilter(ServletRequest request,
+          ServletResponse response,
+          FilterChain chain)
+          throws IOException, ServletException {
+
+        System.out.println("before filter");
+        request.setCharacterEncoding("UTF-8");
+        
+        chain.doFilter(request, response); // 흐름을 넘겨서 다음 필터 또는 서블릿이 실행하게함
+        
+        // 넘겼던 실행 결과가 돌아오면 아래 코드가 실행됨
+        System.out.println("after filter");
+        
+        // response.setCharacterEncoding("UTF-8");
+		    // response.setContentType("text/html; charset=UTF-8");
+        // 위의 두 문장의 경우
+        // response는 응답이라서  doFilter 이후에 넣어야 하는데
+        // 위의 것을 추가하면 모든 응답에 콘텐츠 타입이
+        // css 나 image 이여도 text/html로 고정이 된다.
+        // 그러므로 사용목적에 맞게 잘 사용
+
+      }
+
+    }
+
+### web.xml 에 필터 추가하는 방법
+
+    <filter>  
+      <filter-name>characterEncodingFilter</filter-name>
+      <filter-class>com.newlecture.web.filter.CharacterEncodingFilter</filter-class>
+    </filter>
+    <filter-mapping>
+      <filter-name>characterEncodingFilter</filter-name>
+      <url-pattern>/*</url-pattern>
+    </filter-mapping>
