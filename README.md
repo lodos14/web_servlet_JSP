@@ -143,30 +143,30 @@ service 라는 함수는 두 개의 인자를 전해준다. request, response �
 
 1. 응답 도구를 이용해서 인코딩 방식을 지정해준다.
 
-  response.setCharacterEncoding("UTF-8"); // UTF-8로 인코딩 할 것이다.
+  		response.setCharacterEncoding("UTF-8"); // UTF-8로 인코딩 할 것이다.
   
 2. 브라우저에게 UTF-8 로 읽어야 한다고 알려줘야한다.
 
-  	response.setContentType("text/html; charset=UTF-8");  // html 형식과 UTF-8 로 읽어라
+		response.setContentType("text/html; charset=UTF-8");  // html 형식과 UTF-8 로 읽어라
 
 
 
-	  @WebServlet("/hi")
-	  public class Nana extends HttpServlet {
+		  @WebServlet("/hi")
+		  public class Nana extends HttpServlet {
 
-	    @Override
-	    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+			@Override
+			protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-	      response.setCharacterEncoding("UTF-8");
-	      response.setContentType("text/html; charset=UTF-8");
+			  response.setCharacterEncoding("UTF-8");
+			  response.setContentType("text/html; charset=UTF-8");
 
-	      PrintWriter out = response.getWriter();
-	      for(int i = 0 ; i < 100 ; i++) {
-		out.println("Hello ~~~ 안녕<br>");			
-	      }
-	    }	
+			  PrintWriter out = response.getWriter();
+			  for(int i = 0 ; i < 100 ; i++) {
+			out.println("Hello ~~~ 안녕<br>");			
+			  }
+			}	
 
-	  }
+		  }
   
 
 ## 6. GET 요청과 쿼리스트링
