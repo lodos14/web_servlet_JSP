@@ -272,5 +272,37 @@ POST를 이용해서 요청하는 경우 한글이 깨지는 현상이 있는데
     </filter>
     <filter-mapping>
       <filter-name>characterEncodingFilter</filter-name>
-      <url-pattern>/*</url-pattern>
+      <url-pattern>/*</url-pattern> // 모든 URL에 대해 적용하겠다.
     </filter-mapping>
+
+
+## 9. 여러 개의 Submit 버튼 사용하기
+
+	<form action="add" method="post"> 
+		<div>
+			<label>숫자1</label>
+			<input name = "num1" type="text">
+			<label>숫자2</label>
+			<input name = "num2" type="text">
+			<input type = "submit" name = "operator" value="덧셈"> // /add?operator="덧셈" 이랑 같음
+			<input type = "submit" name = "operator" value = "뺄셈">
+		</div>	
+	</form>
+	
+## 10. 입력 데이터 배열로 받기
+
+사용자 입력을 받을 때 입력이 무수히 많으면 일일이 name을 정해줄 수 없다.<br>
+그럴 경우 name을 통일하면 배열로 값을 보내는데 서블릿 쪽에서 배열로 받으면 된다.
+
+	<input name = "num" type="text">
+	<input name = "num" type="text">
+	<input name = "num" type="text">
+	
+	// 서블릿
+	String[] num_ = req.getParameterValues("num");
+	
+	
+	
+	
+	
+	
