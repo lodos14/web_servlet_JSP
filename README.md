@@ -182,26 +182,26 @@ service 라는 함수는 두 개의 인자를 전해준다. request, response �
 
 하지만 빈 문자열이 오는경우 Integer.parselnt(temp)에서 에러가 발생하므로
 
-  if(temp_ != null && !temp.equals("")) // 빈문자열이 아니다 라는 조건도 추가
-    cnt = Integer.parseInt(temp);
+	  if(temp_ != null && !temp.equals("")) // 빈문자열이 아니다 라는 조건도 추가
+		cnt = Integer.parseInt(temp);
 
-  for(int i=0; i<cnt; i++)
-    out.println(i + 1)+": 안녕 Servlet!!<br>");
+	  for(int i=0; i<cnt; i++)
+		out.println(i + 1)+": 안녕 Servlet!!<br>");
 
 #### index.html
 
-  <!DOCTYPE html>
-  <html>
-  <head>
-  <meta charset="UTF-8">
-  <title>Insert title here</title>
-  </head>
-  <body>
-    환영합니다.<br>
-    <a href = "hi">인사하기</a> <br>
-    <a href = "hi?cnt=3">인사하기</a><br>
-  </body>
-  </html>
+	  <!DOCTYPE html>
+	  <html>
+	  <head>
+	  <meta charset="UTF-8">
+	  <title>Insert title here</title>
+	  </head>
+	  <body>
+		환영합니다.<br>
+		<a href = "hi">인사하기</a> <br>
+		<a href = "hi?cnt=3">인사하기</a><br>
+	  </body>
+	  </html>
 
 ### 6.2 사용자 입력을 통한 GET 요청
 
@@ -423,4 +423,133 @@ POST를 이용해서 요청하는 경우 한글이 깨지는 현상이 있는데
 
 	resp.sendRedirect("add3.html"); // 서버에서 지정한 페이지로 전환해줌
 	
-###	12.1 동적인 페이지 서블릿으로 만들기
+### 12.1 동적인 페이지 서블릿으로 만들기
+
+	@WebServlet("/calcpage")
+	public class CalcPage extends HttpServlet  {
+
+		@Override
+		protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+			Cookie[] cookies = req.getCookies(); 
+			String exp = "0";
+
+			if(cookies != null) { // 쿠키에 있는 데이터 가져오기
+				for(Cookie c : cookies) {
+					if(c.getName().equals("exp")) {
+						exp = c.getValue();
+						break;
+					}
+				}			
+			}
+
+			resp.setCharacterEncoding("UTF-8");
+			resp.setContentType("text/html; charset=UTF-8");
+			PrintWriter out = resp.getWriter();
+
+			out.write("<!DOCTYPE html>"); 
+			out.write("<html>");
+			out.write("		<head>");
+			out.write("		<meta charset=\"UTF-8\">");
+			out.write("		<title>Insert title here</title>");
+			out.write("	<style type=\"text/css\">");
+			out.write("	input{");
+			out.write("		width: 50px;");
+			out.write("		height: 50px;");
+			out.write("	}");
+			out.write("	.output {");
+			out.write("			height: 50px;");
+			out.write("		background : #e9e9e9;");
+			out.write("		font-size: 24px;");
+			out.write("		font-weight: bold;");
+			out.write("		text-align: right;");
+			out.write("		padding: 0px 5px;");
+			out.write("	}");
+			out.write("	</style>");
+			out.write("	</head>");
+			out.write("	<body>");
+			out.write("		<form action=\"calc2\" method=\"post\"> ");
+			out.write("			<table>");
+			out.write("				<tr>");
+			out.printf("					<td class =\"output\" colspan =4>%s</td>", exp);								
+			out.write("				</tr>");
+			out.write("				<tr>");
+			out.write("					<td><input type=\"submit\" name = \"operator\" value = \"CE\"></td>");			
+			out.write("					<td><input type=\"submit\" name = \"operator\" value = \"C\"></td>");			
+			out.write("					<td><input type=\"submit\" name = \"operator\" value = \"BS\"></td>");				
+			out.write("				<td><input type=\"submit\" name = \"operator\" value = \"/\"></td>");						
+			out.write("			</tr>");
+			out.write("			<tr>");
+			out.write("				<td><input type=\"submit\" name = \"value\" value = \"7\"></td>");				
+			out.write("				<td><input type=\"submit\" name = \"value\" value = \"8\"></td>");				
+			out.write("					<td><input type=\"submit\" name = \"value\" value = \"9\"></td>");				
+			out.write("				<td><input type=\"submit\" name = \"operator\" value = \"*\"></td>");						
+			out.write("			</tr>");
+			out.write("			<tr>");
+			out.write("				<td><input type=\"submit\" name = \"value\" value = \"4\"></td>");				
+			out.write("				<td><input type=\"submit\" name = \"value\" value = \"5\"></td>");				
+			out.write("					<td><input type=\"submit\" name = \"value\" value = \"6\"></td>");				
+			out.write("					<td><input type=\"submit\" name = \"operator\" value = \"-\"></td>");						
+			out.write("				</tr>");
+			out.write("				<tr>");
+			out.write("					<td><input type=\"submit\" name = \"value\" value = \"1\"></td>");				
+			out.write("					<td><input type=\"submit\" name = \"value\" value = \"2\"></td>");				
+			out.write("					<td><input type=\"submit\" name = \"value\" value = \"3\"></td>");				
+			out.write("				<td><input type=\"submit\" name = \"operator\" value = \"+\"></td>");						
+			out.write("				</tr>");
+			out.write("				<tr>");
+			out.write("					<td></td>");				
+			out.write("					<td><input type=\"submit\" name = \"value\" value = \"0\"></td>");				
+			out.write("				<td><input type=\"submit\" name = \"dot\" value = \".\"></td>");				
+			out.write("				<td><input type=\"submit\" name = \"operator\" value = \"=\"></td>");						
+			out.write("				</tr>");				
+			out.write("			</table>");
+			out.write("		</form>");
+			out.write("	</body>");
+			out.write("	</html>");
+
+		}
+
+	}
+
+	@WebServlet("/calc2")
+	public class Calc2 extends HttpServlet  {
+
+		@Override
+		protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+			Cookie[] cookies = req.getCookies();
+
+			String value = req.getParameter("value"); // 배열로 받는 경우
+			String operator = req.getParameter("operator");
+			String dot = req.getParameter("dot");
+
+			String exp = "";
+			if(cookies != null)
+				for(Cookie c : cookies) {
+					if(c.getName().equals("exp")) {
+						exp = c.getValue();
+						break;
+					}
+				}
+
+			if(operator != null && operator.equals("=")) { // operator이 null이면 문자열 비교 불가 에러
+
+			} else {
+				exp += (value == null)?"":value;
+				exp += (operator == null)?"":operator;
+				exp += (dot == null)?"":dot;			
+			}
+
+
+			Cookie expCookie = new Cookie("exp", exp);
+			if(operator != null && operator.equals("C")) {
+				expCookie.setMaxAge(0);   // 쿠키 만료를 0초를 하면 삭제랑 같음
+			}
+			resp.addCookie(expCookie);
+			resp.sendRedirect("/calcpage");
+
+
+		}
+
+	}
