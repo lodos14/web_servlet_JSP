@@ -301,8 +301,126 @@ POST를 이용해서 요청하는 경우 한글이 깨지는 현상이 있는데
 	// 서블릿
 	String[] num_ = req.getParameterValues("num");
 	
+## 11. 상태 유지를 위한 방법
+
+1. application : 서블릿 컨텍스트(Context) 저장소 application 전역에서 사용할 수 
+
+		ServletContext application = req.getServletContext();
+		application.setAttribute("value", v);
+		int x = (Integer)application.getAttribute("value"); // 반환 타입은 오브젝트
+		
+		//EX) 예제
+		@WebServlet("/calc")
+		public class AddApp3 extends HttpServlet  {
+
+			@Override
+			protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+				ServletContext application = req.getServletContext();
+				resp.setCharacterEncoding("UTF-8");
+				resp.setContentType("text/html; UTF-8");
+
+				PrintWriter out = resp.getWriter();
+
+
+				String v_ = req.getParameter("v"); // 배열로 받는 경우
+				String op = req.getParameter("operator");
+
+				int v = 0;	
+
+				if (!v_.equals("")) {
+					v = Integer.parseInt(v_);
+				}
+
+				if(op.equals("=")) {
+
+					int x = (Integer)application.getAttribute("value"); // object 로 반환하기 때문에 형변환
+					int y = v;
+					String operator = (String)application.getAttribute("op");
+					int result = 0;
+
+					if(operator.equals("+")) {
+						result = x + y;
+					} else {
+						result = x - y;
+					}
+					out.println(result);
+
+				}else {
+					application.setAttribute("value", v);
+					application.setAttribute("op", op);			
+				}
+
+			}
+
+		}
+		
+2. session - 사용자마다 개별공간이 있음 
+
+		HttpSession session = req.getSession();
+		session.setAttribute("value", v);
+		int x = (Integer)session.getAttribute("value"); 
+		
+3. cookie - 상태 값을 서버에 저장하는게 아니라 가지고 다님
+		
+		// 쿠키 보내기
+		Cookie valuecookie = new Cookie("value", Integer.toString(v)); // 쿠키로 보낼수 있는 건 문자열
+		resp.addCookie(valuecookie);
+		
+		// 쿠키 가져오기 - 쿠키의 데이터 형태는 배열
+		Cookie[] cookies = req.getCookies();
+		for(Cookie c : cookies) {			
+			if(c.getName().equals("value")) {
+				x =  Integer.parseInt(c.getValue());
+				break;
+			}
+		}
+
+### Cookie의 path 옵션
+
+	Cookie valuecookie = new Cookie("value", Integer.toString(v)); 
+	Cookie opCookie = new Cookie("op", op);
 	
+	// 서블릿 문서가 많기 때문에 쿠키를 저장할 때마다 모든 쿠키를 불러오는 걸 방지
+	// 원하는 경로의 서블릿에게만 쿠키를 가져와라
+	valuecookie.setPath("/");
+	opCookie.setPath("/");
 	
+	resp.addCookie(valuecookie);
+	resp.addCookie(opCookie);
 	
+### Cookie의 MaxAge 옵션
+
+- 쿠키의 만료날짜 설정
+
+		valuecookie.setMaxAge(1000); // 쿠키의 만료 -> 1000초  24시간은 24*60*60
+
+
+### 11.1 WAS가 현재 사용자(Session)을 구분하는 방식
+
+![image](https://user-images.githubusercontent.com/81665608/140478188-b39002eb-5352-489d-9c67-d47973a84b5d.png)
+
+![image](https://user-images.githubusercontent.com/81665608/140478953-f8264392-9894-40c3-a3d9-e6bc49988a8b.png)
+
 	
+### 11.2 각 저장소 정리	
+1. application 
+	- 사용범위 : 전역 범위에서 사용하는 저장 공간
+	- 생명주기 : WAS가 시작해서 종료할 때 까지
+	- 저장위치 : WAS 서버의 메모리
+
+2. session
+	- 사용범위 : 세션 범위에서 사용하는 저장 공간
+	- 생명주기 : WAS가 시작해서 종료할 때 까지
+	- 저장위치 : WAS 서버의 메모리
+
+3. cookie - 특정 URL이나 오랜기간 가져가야 하는 경우 사용
+	- 사용범위 : Web Browser별 지정한 path 범주 공간
+	- 생명주기 : Browser에 전달한 시간부터 만료시간까지
+	- 저장위치 : Web Browser의 메모리 또는 파일
+
+## 12. 서버에서 페이지 전환해주기
+
+	resp.sendRedirect("add3.html"); // 서버에서 지정한 페이지로 전환해줌
 	
+###	12.1 동적인 페이지 서블릿으로 만들기
