@@ -546,10 +546,8 @@ POST를 이용해서 요청하는 경우 한글이 깨지는 현상이 있는데
 			if(operator != null && operator.equals("C")) {
 				expCookie.setMaxAge(0);   // 쿠키 만료를 0초를 하면 삭제랑 같음
 			}
-			resp.addCookie(expCookie);
+			resp.addCookie(expCookie);  
 			resp.sendRedirect("/calcpage");
-
-
 		}
 
 	}
