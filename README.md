@@ -551,3 +551,223 @@ POST를 이용해서 요청하는 경우 한글이 깨지는 현상이 있는데
 		}
 
 	}
+
+## 13. GET과 POST에 특화된 서비스 함수
+
+### 13.1 getMethod를 이용하는 방법
+get 요청과 post 요청을 구분하는 방법 2가지
+
+	@Override
+	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+		if(req.getMethod().equals("GET")) { // get 이란 문자가 왔다는걸 대문자로 사용함
+			System.out.println("GET 요청이 왔습니다.");
+		} else if (req.getMethod().equals("POST")) {
+			System.out.println("POST 요청이 왔습니다.");	
+		}
+		super.service(req, resp);
+	}
+
+### 13.2 service함수를 이용하는 방법
+
+부모가 가지고 있는 service함수는 사용자가 요청을 하면 doGet이나 doPost를 실행하고 이 두 함수가 오버라이드가 안 돼 있으면 오류가 난다.
+
+service를 이용하기 위해서는 doGET()과 doPOST를 오버라이드 해줘야한다.
+
+doGet이나 doPost전에 실행할 문장이 있으면 service를 오버라이드 해서 코드를 만들고 <br>
+doGet이나 doPost만 필요하면 service를 오버라이드 안해도 자동으로 호출된다.
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		System.out.println("doGet 메소드가 호출 되었습니다.");	
+	}
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		System.out.println("doPOST 메소드가 호출 되었습니다.");	
+	}
+
+### 13.3 calculator get, post 합치기
+
+1. 같은 페이지를 사용하므로 여기서 생성된 쿠리를 다른 페이지에서 쿠키를 사용 못하도록 설정 가능
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		Cookie[] cookies = req.getCookies(); 
+		String exp = "0";
+		
+		if(cookies != null) {
+			for(Cookie c : cookies) {
+				if(c.getName().equals("exp")) {	
+					exp = c.getValue();
+					break;
+				} 
+			}
+		}
+			
+		resp.setCharacterEncoding("UTF-8");
+		resp.setContentType("text/html; charset=UTF-8");
+		PrintWriter out = resp.getWriter();
+		
+		out.write("<!DOCTYPE html>");
+		out.write("<html>");
+		out.write("		<head>");
+		out.write("		<meta charset=\"UTF-8\">");
+		out.write("		<title>Insert title here</title>");
+		out.write("	<style type=\"text/css\">");
+		out.write("	input{");
+		out.write("		width: 50px;");
+		out.write("		height: 50px;");
+		out.write("	}");
+		out.write("	.output {");
+		out.write("			height: 50px;");
+		out.write("		background : #e9e9e9;");
+		out.write("		font-size: 24px;");
+		out.write("		font-weight: bold;");
+		out.write("		text-align: right;");
+		out.write("		padding: 0px 5px;");
+		out.write("	}");
+		out.write("	</style>");
+		out.write("	</head>");
+		out.write("	<body>");
+		out.write("		<form method=\"post\"> "); // get과 post를 처리하는 페이지가 같기 때문에 action 생략 가능
+		out.write("			<table>");
+		out.write("				<tr>");
+		out.printf("					<td class =\"output\" colspan =4>%s</td>",exp);								
+		out.write("				</tr>");
+		out.write("				<tr>");
+		out.write("					<td><input type=\"submit\" name = \"operator\" value = \"CE\"></td>");			
+		out.write("					<td><input type=\"submit\" name = \"operator\" value = \"C\"></td>");			
+		out.write("					<td><input type=\"submit\" name = \"operator\" value = \"BS\"></td>");				
+		out.write("				<td><input type=\"submit\" name = \"operator\" value = \"/\"></td>");						
+		out.write("			</tr>");
+		out.write("			<tr>");
+		out.write("				<td><input type=\"submit\" name = \"value\" value = \"7\"></td>");				
+		out.write("				<td><input type=\"submit\" name = \"value\" value = \"8\"></td>");				
+		out.write("					<td><input type=\"submit\" name = \"value\" value = \"9\"></td>");				
+		out.write("				<td><input type=\"submit\" name = \"operator\" value = \"*\"></td>");						
+		out.write("			</tr>");
+		out.write("			<tr>");
+		out.write("				<td><input type=\"submit\" name = \"value\" value = \"4\"></td>");				
+		out.write("				<td><input type=\"submit\" name = \"value\" value = \"5\"></td>");				
+		out.write("					<td><input type=\"submit\" name = \"value\" value = \"6\"></td>");				
+		out.write("					<td><input type=\"submit\" name = \"operator\" value = \"-\"></td>");						
+		out.write("				</tr>");
+		out.write("				<tr>");
+		out.write("					<td><input type=\"submit\" name = \"value\" value = \"1\"></td>");				
+		out.write("					<td><input type=\"submit\" name = \"value\" value = \"2\"></td>");				
+		out.write("					<td><input type=\"submit\" name = \"value\" value = \"3\"></td>");				
+		out.write("				<td><input type=\"submit\" name = \"operator\" value = \"+\"></td>");						
+		out.write("				</tr>");
+		out.write("				<tr>");
+		out.write("					<td></td>");				
+		out.write("					<td><input type=\"submit\" name = \"value\" value = \"0\"></td>");				
+		out.write("				<td><input type=\"submit\" name = \"dot\" value = \".\"></td>");				
+		out.write("				<td><input type=\"submit\" name = \"operator\" value = \"=\"></td>");						
+		out.write("				</tr>");				
+		out.write("			</table>");
+		out.write("		</form>");
+		out.write("	</body>");
+		out.write("	</html>");	
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		Cookie[] cookies = req.getCookies();
+		
+		String value = req.getParameter("value"); // 배열로 받는 경우
+		String operator = req.getParameter("operator");
+		String dot = req.getParameter("dot");
+		
+		String exp = "";
+		
+		
+		if(cookies != null)
+			for(Cookie c : cookies) {
+				if(c.getName().equals("exp")) {
+					exp = c.getValue();
+					break;
+				}
+			}
+		
+		if(operator != null && operator.equals("=")) {
+			
+		} else {
+			exp += (value == null)?"":value;
+			exp += (operator == null)?"":operator;
+			exp += (dot == null)?"":dot;			
+		}
+		
+		
+		Cookie expCookie = new Cookie("exp", exp);
+		
+		if(operator != null && operator.equals("C")) {
+			expCookie.setMaxAge(0);
+				
+		}
+		expCookie.setPath("/calculator"); // 같은 페이지를 사용하므로 다른 페이지에서 쿠키를 사용 못하도록 설정 가능
+		resp.addCookie(expCookie);
+		resp.sendRedirect("calculator"); // 자기가 자기를 호출하면 get요청
+	}
+	
+## 14. JSP
+
+JSP 란 JavaServer Pages 의 약자이며
+
+HTML 코드에 JAVA 코드를 넣어 동적웹페이지를 생성하는 웹어플리케이션 도구이다.
+
+JSP 가 실행되면 자바 서블릿(Servlet) 으로 변환되며 웹 어플리케이션 서버에서 동작되면서 필요한 기능을 수행하고
+
+그렇게 생성된 데이터를 웹페이지와 함께 클라이언트로 응답한다.
+
+### 14.1 코드블록
+
+![image](https://user-images.githubusercontent.com/81665608/140748039-8c99813d-4128-4547-b962-6dbe5dce1e11.png)
+
+![image](https://user-images.githubusercontent.com/81665608/140748143-b8ebe105-e17f-44e8-8142-d2442fb1f527.png)
+
+![image](https://user-images.githubusercontent.com/81665608/140748297-86d355d2-46ee-426b-ae9b-800ebaee6f9a.png)
+
+![image](https://user-images.githubusercontent.com/81665608/140748376-03f3b2f1-8de7-44be-b263-146aafa79fe2.png)
+
+![image](https://user-images.githubusercontent.com/81665608/140748474-62b40186-d668-439c-baf8-bdd6fa2077c5.png)
+
+### 14.2 코드블록의 내장 객체
+
+제스퍼가 만들어낸 서블릿안에 미리 선언한 객체
+
+![image](https://user-images.githubusercontent.com/81665608/140749293-103858a6-e429-4f16-bf2f-1cde374fe869.png)
+
+![image](https://user-images.githubusercontent.com/81665608/140749341-c0e6a89b-8b0d-480f-aacd-fbdb03a1ed0f.png)
+
+![image](https://user-images.githubusercontent.com/81665608/140749534-a0bcfd8f-ea94-4511-86f7-21039c6f9caf.png)
+
+![image](https://user-images.githubusercontent.com/81665608/140749611-25234bb8-f08c-4feb-913a-1aa4303ebc4b.png)
+
+
+### 14.3 JSP로 만드는 Hello 서블릿
+
+	<%@ page language="java" contentType="text/html; charset=UTF-8"
+		pageEncoding="UTF-8"%>
+	<%
+
+	String cnt_ = request.getParameter("cnt");
+
+	int cnt = 10;
+
+	if(cnt_ != null && !cnt_.equals("")) {
+		cnt = Integer.parseInt(cnt_);
+	}
+
+	%>
+	<!DOCTYPE html>
+	<html>
+	<head>
+	<meta charset="UTF-8">
+	<title>Insert title here</title>
+	</head>
+	<body>
+		<%for(int i = 0 ; i < cnt; i++) {%>
+		안녕안녕 <br>
+		<% } %>
+	</body>
+	</html>
