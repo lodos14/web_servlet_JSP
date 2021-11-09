@@ -771,3 +771,394 @@ JSP 가 실행되면 자바 서블릿(Servlet) 으로 변환되며 웹 어플리
 		<% } %>
 	</body>
 	</html>
+	
+## 15. JSP MVC model
+
+### 15.1 JSP MVC model1
+
+![image](https://user-images.githubusercontent.com/81665608/140857558-8ab335a5-969c-49f0-95bc-585311ed5218.png)
+
+	<%	
+		int num = 0;
+		String num_ = request.getParameter("n");
+		if(num_ != null && !num_.equals("")){
+			num = Integer.parseInt(num_);
+		}
+		String result;
+
+		if(num % 2 != 0){
+			result = "홀수"	;
+		} else {
+			result = "짝수";
+		}
+	%>
+
+	<!DOCTYPE html>
+	<html>
+	<head>
+	<meta charset="UTF-8">
+	<title>Insert title here</title>
+	</head>
+	<body>
+		<%=result %> 입니다.
+	</body>
+	</html>
+
+	
+### 15.2 JSP MVC model2
+![image](https://user-images.githubusercontent.com/81665608/140864040-a05b37e5-1de5-4f9a-9d91-57f586a0ac37.png)
+	
+	
+	@WebServlet("/spag")
+	public class Spag extends HttpServlet{
+
+		@Override
+		protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+			int num = 0;
+			String num_ = req.getParameter("n");
+			if(num_ != null && !num_.equals("")){
+				num = Integer.parseInt(num_);
+			}
+			String result;
+
+			if(num % 2 != 0){
+				result = "홀수";
+			} else {
+				result = "짝수";
+			}
+
+			req.setAttribute("result", result ); // request - forward 관계에서 사용할 수 있는 저장소 
+
+			//redirect - 현재 작업한 내용과 상관없이 새로운 요청
+			//forward - 현재 작업한 내용을 이어갈 수 있도록 공유
+
+			RequestDispatcher dispatcher =  req.getRequestDispatcher("/spag.jsp"); // 요청할곳 경로 설정
+			dispatcher.forward(req, resp);
+		}
+
+	}
+	
+	
+	<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+ 
+ 
+	<!DOCTYPE html>
+	<html>
+	<head>
+	<meta charset="UTF-8">
+	<title>Insert title here</title>
+	</head>
+	<body>
+		<%=request.getAttribute("result") %> 입니다.
+	</body>
+	</html>
+	
+### 15.3 View를 위한 데이터 추출 표현식 EL
+
+![image](https://user-images.githubusercontent.com/81665608/140867954-5503fa75-1d31-4dcc-82ba-a80b99650e9e.png)
+
+![image](https://user-images.githubusercontent.com/81665608/140868474-07ffb01f-8629-42de-bb8b-3126fd3cdd63.png)
+
+### 15.4 EL의 저장소
+
+만약 저장소에 저장된 키의 이름이 같은 경우 우선순위
+
+![image](https://user-images.githubusercontent.com/81665608/140869626-2e9d536e-9220-4b15-b8da-99bef7ff88da.png)
+
+어떤 저장소를 특정하고 싶은경우 ${sessionScope.cnt}
+
+### 15.5 EL을 사용할 수 있는 여러가지 객체
+
+![image](https://user-images.githubusercontent.com/81665608/140870422-3634aa99-5491-41d1-9009-6a6523ee3501.png)
+
+pageContext 같은 경우 함수 호출 시 ${pageContext.request.method }
+
+### 15.6 EL 연산자
+
+![image](https://user-images.githubusercontent.com/81665608/140872593-6d2ee334-fa0b-40af-a57c-5bf34cc5a60d.png)
+
+empty - null 이거나 값이 비어있으면 참 ${empty param.n}
+
+
+## 16. JSP를 이용한 웹 프로그래밍
+
+### 16.1 JDBC를 이용해 글 목록 구현하기
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th class="w60">번호</th>
+				<th class="expand">제목</th>
+				<th class="w100">작성자</th>
+				<th class="w100">작성일</th>
+				<th class="w60">조회수</th>
+			</tr>
+		</thead>
+		<tbody>
+
+		<% while(rs.next()){ %>
+
+		<tr>
+			<td><%=rs.getInt("ID") %></td>
+			<td class="title indent text-align-left"><a href="detail.html"><%=rs.getString("TITLE")%></a></td>
+			<td><%= rs.getString("WRITER_ID") %></td>
+			<td>
+				<%=rs.getDate("REGDATE") %>		
+			</td>
+			<td><%=rs.getInt("HIT") %></td>
+		</tr>
+		<%} %>
+		</tbody>
+	</table>
+	
+### 16.2 자세한 페이지 구현하기
+
+	<table class="table">
+		<tbody>
+			<tr>
+				<th>제목</th>
+				<td class="text-align-left text-indent text-strong text-orange" colspan="3"><%=rs.getString("TITLE") %></td>
+			</tr>
+			<tr>
+				<th>작성일</th>
+				<td class="text-align-left text-indent" colspan="3"><%= rs.getDate("REGDATE") %>	</td>
+			</tr>
+			<tr>
+				<th>작성자</th>
+				<td><%=rs.getString("WRITER_ID") %></td>
+				<th>조회수</th>
+				<td><%= rs.getInt("HIT") %></td>
+			</tr>
+			<tr>
+				<th>첨부파일</th>
+				<td colspan="3"></td>
+			</tr>
+			<tr class="content">
+				<td colspan="4"><%= rs.getString("CONTENT") %></td>
+			</tr>
+		</tbody>
+	</table>
+
+### 16.3 자세한 페이지 MVC model1로 변경하기
+
+	<%	
+	int id = Integer.parseInt(request.getParameter("id"));
+	String url = "jdbc:oracle:thin:@localhost:1521/xepdb1";
+	String sql = "SELECT * FROM NOTICE WHERE ID = ?";
+
+	Class.forName("oracle.jdbc.driver.OracleDriver");
+	Connection con = DriverManager.getConnection(url, "", "");
+	PreparedStatement st = con.prepareStatement(sql);
+	st.setInt(1, id);
+
+	ResultSet rs = st.executeQuery(); 
+
+	rs.next();
+
+	String title = rs.getString("TITLE");
+	Date regdate = rs.getDate("REGDATE");
+	String writerId = rs.getString("WRITER_ID");
+	int hit = rs.getInt("HIT"); 
+	String content = rs.getString("CONTENT"); 
+
+	rs.close();
+	st.close();
+	con.close();               		
+	%>
+	
+	<table class="table">
+		<tbody>
+			<tr>
+				<th>제목</th>
+				<td class="text-align-left text-indent text-strong text-orange" colspan="3"><%=title %></td>
+			</tr>
+			<tr>
+				<th>작성일</th>
+				<td class="text-align-left text-indent" colspan="3"><%=regdate %></td>
+			</tr>
+			<tr>
+				<th>작성자</th>
+				<td><%=writerId %></td>
+				<th>조회수</th>
+				<td><%=hit %></td>
+			</tr>
+			<tr>
+				<th>첨부파일</th>
+				<td colspan="3"></td>
+			</tr>
+			<tr class="content">
+				<td colspan="4"><%=content %></td>
+			</tr>
+		</tbody>
+	</table>
+	
+### 16.4 자세한 페이지 MVC model2로 변경하기
+
+![image](https://user-images.githubusercontent.com/81665608/140907729-d70b2d04-2212-458c-9fa1-4adf22c2ee98.png)
+
+protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		int id = Integer.parseInt(request.getParameter("id"));
+		String url = "jdbc:oracle:thin:@localhost:1521/xepdb1";
+		String sql = "SELECT * FROM NOTICE WHERE ID = ?";
+
+		try {			
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			Connection con = DriverManager.getConnection(url, "ohji", "tkwl1414");
+			PreparedStatement st = con.prepareStatement(sql);
+			st.setInt(1, id);
+
+			ResultSet rs = st.executeQuery(); 
+				
+			rs.next();
+				
+			String title = rs.getString("TITLE");
+			Date regdate = rs.getDate("REGDATE");
+			String writerId = rs.getString("WRITER_ID");
+			int hit = rs.getInt("HIT"); 
+			String content = rs.getString("CONTENT"); 
+			 
+			request.setAttribute("title", title);
+			request.setAttribute("regdate", regdate);
+			request.setAttribute("writerId", writerId);
+			request.setAttribute("hit", hit);
+			request.setAttribute("content", content);
+			
+			rs.close();
+			st.close();
+			con.close();
+			
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//redirect  
+		//forward
+		RequestDispatcher dispatcher =  request.getRequestDispatcher("/notice/detail.jsp");
+		dispatcher.forward(request, response);	
+	}
+
+### 16.5 데이터의 구조화
+
+데이터를 하나의 관련있는 객체로 만들어서 사용
+
+![image](https://user-images.githubusercontent.com/81665608/140916119-e49e8086-213b-4d92-8a52-184c2269154a.png)
+
+
+### 16.6 게시판 목록 MVC model2로 변경하기
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	
+		String url = "jdbc:oracle:thin:@localhost:1521/xepdb1";
+		String sql = "SELECT * FROM NOTICE";
+
+		List<Notice> list = new ArrayList<Notice>(); // 게시판 목록이 많으니 리스트 객체 생성
+
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			Connection con = DriverManager.getConnection(url, "ohji", "tkwl1414");
+			Statement st = con.createStatement();
+			ResultSet rs = st.executeQuery(sql);
+
+			while(rs.next()){
+				int id = rs.getInt("ID");
+				String title = rs.getString("TITLE");
+				Date regdate = rs.getDate("REGDATE");
+				String writerId = rs.getString("WRITER_ID");
+				int hit = rs.getInt("HIT"); 
+				String content = rs.getString("CONTENT");
+
+				Notice notice = new Notice(
+						id,
+						title,
+						regdate,
+						writerId,
+						hit,
+						content			
+					);
+				list.add(notice);
+			}	
+
+			rs.close();
+			st.close();
+			con.close();
+
+		} catch (ClassNotFoundException e) {		
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		request.setAttribute("list", list);
+
+		request
+		.getRequestDispatcher("/WEB-INF/view/notice/list.jsp")
+		.forward(request, response);
+
+	}	
+	
+	<tbody>
+	<%-- 
+	<%
+	List<Notice> list = (List<Notice>)request.getAttribute("list");
+	for(Notice n  : list){ // 지역변수만 가능하니 list를 빼줌
+		pageContext.setAttribute("n", n); // EL은 지역변수 말고 저장소만 사용가능 그래서 다시 저장소에 넣어줌
+	%>			
+	 --%>
+	 <c:forEach var = "n" items="${list}"> // forEach가 위에 과정을 처리해줌 JSTL 라이브러리 이용
+	<tr>
+		<td>${n.id})</td>
+		<td class="title indent text-align-left"><a href="detail?id=${n.id }">${n.title }</a></td>
+		<td>${n.writerId }</td>
+		<td>${n.regdate }</td>
+		<td>${n.hit }</td>
+	</tr>
+	</c:forEach>
+	<%-- <%} %> --%>
+	</tbody>
+	
+	
+
+### 16.7 View 페이지 은닉하기
+
+view 페이지를 사용자가 요청할 수 있는데 디렉토리에 있으므로 MVC model2를 이용해서 만들었다면 View 페이지는 숨겨야한다. 왜냐하면 Controller 페이지 부터 시작하기 때문이다.
+
+사용자가 접근할 수 없는 WEB_INF 폴더에 View 페이지가 담긴 폴더를 옮기고 Cotroller 페이지에서 아래와 같이 셋팅하면 된다.
+
+	request.getRequestDispatcher("/WEB-INF/view/notice/detail.jsp");
+
+### 16.8 JSTL
+
+https://mvnrepository.com/artifact/javax.servlet/jstl/1.2 에서 .jar 파일 다운로드
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
