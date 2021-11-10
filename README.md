@@ -1136,9 +1136,27 @@ view 페이지를 사용자가 요청할 수 있는데 디렉토리에 있으므
 https://mvnrepository.com/artifact/javax.servlet/jstl/1.2 에서 .jar 파일 다운로드
 
 
+#### 16..1 forEach
 
+- 속성
+1. items : forEach가 순회할 Collection 개체를 지정한다. 
+2. begin : 반복문의 시작값을 설정한다. (0시작)
+3. end : 반복문의 종료값을 설정한다. 
+4. step : 반복문의 증가값을 설정한다. 
+5. var : 반복문의 순회시 해당하는 값을 담을 변수를 설정한다. 
+6. varStatus : 변수의 상태를 담을 변수를 설정한다. 
 
+- varStatus : 
 
+		<c:forEach items="${LIST}" var="item" varStatus="st"
+		${status.current} : 현재 아이템 
+		${status.index} : 0부터의 순서
+		${status.count} : 1부터의 순서
+		${status.first} : 현재 루프가 처음인지 반환
+		${status.last} : 현재 루프가 마지막인지 반환
+		${status.begin} : 시작값
+		${status.end} : 끝값
+		${status.step} : 증가값
 
 
 
