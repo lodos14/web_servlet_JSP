@@ -1136,7 +1136,7 @@ view 페이지를 사용자가 요청할 수 있는데 디렉토리에 있으므
 https://mvnrepository.com/artifact/javax.servlet/jstl/1.2 에서 .jar 파일 다운로드
 
 
-#### 16..1 forEach
+#### 16.8.1 forEach
 
 - 속성
 1. items : forEach가 순회할 Collection 개체를 지정한다. 
@@ -1159,10 +1159,44 @@ https://mvnrepository.com/artifact/javax.servlet/jstl/1.2 에서 .jar 파일 다
 		${status.step} : 증가값
 
 
+#### forEach문으로 Pager 번호 만들기
 
+	<c:set var = "page" value = "${(empty param.p)?1:param.p}"/>  // set는 변수를 생성 해줌
+	<c:set var = "startNum" value ="${page - (page-1)%5}" />
+	<ul class="-list- center">
+		<c:forEach var = "i" begin="0" end="4"> 
+		<li><a class="-text- orange bold" href="?p=${startNum+i}&t=&q=" >${startNum+i}</a></li>
+		</c:forEach>		
+	</ul>	
 
+#### forEach문으로 이전, 다음 페이지 버튼 만들기
 
+	<div>
+		<c:set var = "page" value = "${(empty param.p)?1:param.p}"/>
+		<c:set var = "startNum" value ="${page - (page-1)%5}" />
+		<c:set var = "lastNum" value ="14" />
 
+		<c:if test="${startNum > 1 }"> // 태그형 if문
+			<a href = "?p=${startNum-1}&t=&q=" class="btn btn-prev" >이전</a>
+		</c:if>
+		<c:if test="${startNum <= 1 }">
+			<span class="btn btn-prev" onclick="alert('이전 페이지가 없습니다.');">이전</span>
+		</c:if>
+
+	</div>
+	<ul class="-list- center">
+		<c:forEach var = "i" begin="0" end="4"> 
+			<li><a class="-text- orange bold" href="?p=${startNum+i}&t=&q=" >${startNum+i}</a></li>
+		</c:forEach>		
+	</ul>
+	<div>	
+		<c:if test="${startNum + 5 <= lastNum }">
+			<a href = "?p=${startNum+5}&t=&q=" class = "btn ntn-next">다음</a>
+		</c:if>
+		<c:if test="${startNum + 5 > lastNum }">
+			<span class="btn btn-next" onclick="alert('다음 페이지가 없습니다.');">다음</span>	
+		</c:if>
+	</div>
 
 
 
