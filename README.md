@@ -1198,19 +1198,61 @@ https://mvnrepository.com/artifact/javax.servlet/jstl/1.2 에서 .jar 파일 다
 		</c:if>
 	</div>
 
+#### 16.8.2 forTokens(파일 목록 링크)
+
+문자열을 어떤 특정한 문자 기준으로 구분자를 지정함
+
+	<th>첨부파일</th>
+	<td colspan="3" style="text-align: left; text-indent: 10px;">
+		<c:forTokens var = "fileName" items="${n.files }" delims="," varStatus="st"> // ???,???,??? ,를 기준으로 3개의 토큰으로 나눠서 하나씩 출력
+			<a href = "${fileName }">${fileName }</a>
+			<c:if test="${!st.last}">
+			/
+			</c:if>		
+		</c:forTokens>						
+	</td>
+
+#### 16.8.3 날짜 format 태그 (formatDate)
+
+	<%@ taglib prefix="fmt"  uri="http://java.sun.com/jsp/jstl/fmt"%> // 사전 설정
+
+	<tr>
+		<th>작성일</th>
+		<td class="text-align-left text-indent" colspan="3">
+			<fmt:formatDate pattern="yyyy-MM-dd hh:mm:ss" value="${n.regdate }"/>
+		</td>
+	</tr>
+
+#### 16.8.4 숫자 format 태그 (formatNumber)
+
+	<tr>
+		<th>작성자</th>
+		<td>${n.writerId}</td>
+		<th>조회수</th>
+		<td><fmt:formatNumber value="${n.hit}"/></td> 아무 속성을 넣지 않으면 3자리로 끊어줌 다른건 찾아보기
+	</tr>
+
+#### 16.8.5 functions로 EL에서 함수 이용하기
+
+	<tr>
+		<th>첨부파일</th>
+		<td colspan="3" style="text-align: left; text-indent: 10px;">
+			<c:forTokens var = "fileName" items="${n.files }" delims="," varStatus="st">
+
+				<c:set var="style" value="" />
+				<c:if test="${fn:endsWith(fileName,'.zip') }"> // 문자 끝에 .zip를 포함한다면 
+					<c:set var= "style" value="font-weight: bold; color: red;" /> // 스타일 변경
+				</c:if>
+				<a href = "${fileName }" style="${style}" >${fn:toUpperCase(fileName) }</a>
+				<c:if test="${!st.last}">
+				/
+				</c:if>		
+			</c:forTokens>						
+		</td>
+	</tr>
 
 
+### 17. 서비스 클래스 구현하기
 
-
-
-
-
-
-
-
-
-
-
-
-
+![image](https://user-images.githubusercontent.com/81665608/141282966-57c8c738-4c89-4774-87cd-46aeb50532ad.png)
 
