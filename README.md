@@ -1252,7 +1252,354 @@ https://mvnrepository.com/artifact/javax.servlet/jstl/1.2 에서 .jar 파일 다
 	</tr>
 
 
-### 17. 서비스 클래스 구현하기
+## 17. 서비스 클래스 구현하기
 
 ![image](https://user-images.githubusercontent.com/81665608/141282966-57c8c738-4c89-4774-87cd-46aeb50532ad.png)
 
+### 17.1 NoticeService 구현
+
+	public class NoticeService {
+
+		// 각각의 함수를 구현하는것 보다 유사한 기능의 함수를 호출하는 식으로 이용하는게 나중에 유지보수가 좋다.
+		public List<Notice> getNoticeList(){
+
+			return getNoticeList("title", "", 1); // getNoticeList(1); 을 호출하면 2번의 스택이 쌓이므로 비추천
+		}
+		public List<Notice> getNoticeList(int page){
+
+			return getNoticeList("title", "", page);
+		}
+		public List<Notice> getNoticeList(String field, String query, int page){
+
+			List<Notice> list = new ArrayList<Notice>();
+
+			String sql = "SELECT * FROM (" + 
+					"    SELECT ROWNUM NUM, N.*" + 
+					"    FROM (SELECT NOTICE.* FROM NOTICE WHERE "+field+" LIKE ? ORDER BY REGDATE DESC) N" + 
+					") " + 
+					"WHERE NUM BETWEEN ? AND ?";
+			// field를 ?로 넣으면 문자열 자체가 들어가서 "TITLE" 이대로 들어감 그러므로 + 사용
+			// 1, 11, 21, 31 -> 1+(page-1)*10
+			// 10, 20, 30, 40 -> page*10
+
+			String url = "jdbc:oracle:thin:@localhost:1521/xepdb1";
+
+			try {
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				Connection con = DriverManager.getConnection(url, "ohji", "tkwl1414");
+				PreparedStatement st = con.prepareStatement(sql);
+				st.setString(1, "%"+query+"%");
+				st.setInt(2, 1+(page-1)*10);
+				st.setInt(3, (page)*10);
+				ResultSet rs = st.executeQuery();
+
+				while(rs.next()){
+					int id = rs.getInt("ID");
+					String title = rs.getString("TITLE");
+					Date regdate = rs.getDate("REGDATE");
+					String writerId = rs.getString("WRITER_ID");
+					int hit = rs.getInt("HIT"); 
+					String content = rs.getString("CONTENT");
+					String files = rs.getString("FILES");
+
+					Notice notice = new Notice(
+							id,
+							title,
+							regdate,
+							writerId,
+							hit,
+							content,
+							files
+						);
+					list.add(notice);
+				}	
+
+				rs.close();
+				st.close();
+				con.close();
+
+			} catch (ClassNotFoundException e) {		
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			return list;
+		}
+		public int getNoticeCount() {
+
+			return getNoticeCount("title", "");
+		}
+		public int getNoticeCount(String field, String query) {
+
+			int count = 0;
+
+			String sql = "SELECT COUNT(ID) COUNT FROM (" + 
+					"    SELECT ROWNUM NUM, N.*" + 
+					"    FROM (SELECT NOTICE.* FROM NOTICE WHERE "+field+" LIKE ? ORDER BY REGDATE DESC) N" + 
+					") " ;
+
+			String url = "jdbc:oracle:thin:@localhost:1521/xepdb1";
+
+			try {
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				Connection con = DriverManager.getConnection(url, "ohji", "tkwl1414");
+				PreparedStatement st = con.prepareStatement(sql);
+				st.setString(1, "%"+query+"%");
+				ResultSet rs = st.executeQuery();
+
+				count = rs.getInt("count");
+
+				rs.close();
+				st.close();
+				con.close();
+
+			} catch (ClassNotFoundException e) {		
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+			return count;
+		}
+		public Notice getNotice(int id) {
+
+			Notice notice = null;
+
+			String sql = "SELECT * FROM NOTICE WHERE ID = ?";
+
+			String url = "jdbc:oracle:thin:@localhost:1521/xepdb1";
+
+			try {
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				Connection con = DriverManager.getConnection(url, "ohji", "tkwl1414");
+				PreparedStatement st = con.prepareStatement(sql);
+				st.setInt(1, id);
+				ResultSet rs = st.executeQuery();
+
+			if(rs.next()){
+				int nid = rs.getInt("ID");
+				String title = rs.getString("TITLE");
+				Date regdate = rs.getDate("REGDATE");
+				String writerId = rs.getString("WRITER_ID");
+				int hit = rs.getInt("HIT"); 
+				String content = rs.getString("CONTENT");
+				String files = rs.getString("FILES");
+
+				notice = new Notice(
+						nid,
+						title,
+						regdate,
+						writerId,
+						hit,
+						content,
+						files
+					);
+			}	
+
+				rs.close();
+				st.close();
+				con.close();
+
+			} catch (ClassNotFoundException e) {		
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+			return notice;
+		}
+		public Notice getNextNotice(int id) {
+
+			Notice notice = null;
+
+			String sql = "SELECT * FROM (" + 
+					"SELECT * FROM NOTICE " + 
+					"WHERE REGDATE > (SELECT REGDATE FROM NOTICE WHERE ID = ?) " + 
+					"ORDER BY REGDATE " + 
+					") " + 
+					"WHERE ROWNUM = 1";
+
+			String url = "jdbc:oracle:thin:@localhost:1521/xepdb1";
+
+			try {
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				Connection con = DriverManager.getConnection(url, "ohji", "tkwl1414");
+				PreparedStatement st = con.prepareStatement(sql);
+				st.setInt(1, id);
+				ResultSet rs = st.executeQuery();
+
+			if(rs.next()){
+				int nid = rs.getInt("ID");
+				String title = rs.getString("TITLE");
+				Date regdate = rs.getDate("REGDATE");
+				String writerId = rs.getString("WRITER_ID");
+				int hit = rs.getInt("HIT"); 
+				String content = rs.getString("CONTENT");
+				String files = rs.getString("FILES");
+
+				notice = new Notice(
+						nid,
+						title,
+						regdate,
+						writerId,
+						hit,
+						content,
+						files
+					);
+			}	
+
+				rs.close();
+				st.close();
+				con.close();
+
+			} catch (ClassNotFoundException e) {		
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+			return notice;
+		}
+
+		public Notice getPrevNotice(int id) {
+
+			Notice notice = null;
+
+			String sql = "SELECT * FROM ( " + 
+					"SELECT * FROM NOTICE " + 
+					"WHERE REGDATE < (SELECT REGDATE FROM NOTICE WHERE ID = ?) " + 
+					"ORDER BY REGDATE DESC"  + 
+					") " + 
+					"WHERE ROWNUM = 1";
+
+			String url = "jdbc:oracle:thin:@localhost:1521/xepdb1";
+
+			try {
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				Connection con = DriverManager.getConnection(url, "ohji", "tkwl1414");
+				PreparedStatement st = con.prepareStatement(sql);
+				st.setInt(1, id);
+				ResultSet rs = st.executeQuery();
+
+			if(rs.next()){
+				int nid = rs.getInt("ID");
+				String title = rs.getString("TITLE");
+				Date regdate = rs.getDate("REGDATE");
+				String writerId = rs.getString("WRITER_ID");
+				int hit = rs.getInt("HIT"); 
+				String content = rs.getString("CONTENT");
+				String files = rs.getString("FILES");
+
+				notice = new Notice(
+						nid,
+						title,
+						regdate,
+						writerId,
+						hit,
+						content,
+						files
+					);
+			}	
+
+				rs.close();
+				st.close();
+				con.close();
+
+			} catch (ClassNotFoundException e) {		
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+			return notice;
+		}
+	}
+
+## 18. 목록 페이지에서 검색 추가하기
+
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+
+		String field_ = request.getParameter("f") ;
+		String query_ = request.getParameter("q") ;
+
+		String field = "title";
+		if(field_ != null)
+			field = field_;
+
+		String query = "";
+		if(query_ != null)
+			query = query_;
+
+		NoticeService service = new NoticeService();
+		List<Notice> list = service.getNoticeList(field, query, 1);
+
+		request.setAttribute("list", list);
+
+		request
+		.getRequestDispatcher("/WEB-INF/view/notice/list.jsp")
+		.forward(request, response);
+
+
+	}
+	
+	<form class="table-form" action="/notice/list" method="get">
+		<fieldset>
+			<legend class="hidden">공지사항 검색 필드</legend>
+			<label class="hidden">검색분류</label>
+			<select name="f">
+				<option ${(param.f == "title") ? "selected":"" } value="title">제목</option> // 선택 유지
+				<option ${(param.f == "writer_id") ? "selected":"" } value="writer_id">작성자</option>
+			</select> 
+			<label class="hidden">검색어</label>
+			<input type="text" name="q" value="${param.q }"/> // 검색어 유지
+			<input class="btn btn-search" type="submit" value="검색" />
+		</fieldset>
+	</form>
+	
+## 19. Pager에서 현재 페이지 번호 처리
+
+	<ul class="-list- center">
+		<c:forEach var = "i" begin="0" end="4">
+		// 페이지 번호 클릭시 현재 field와 query를 같이 보낸다. 그럼 검색 결과 유지하면서 목록을 보여줌
+		<li><a class="-text- orange bold" href="?p=${startNum+i}&f=${param.f}&q=${param.q }">${startNum+i}</a></li>
+		</c:forEach> 		
+	</ul>
+	
+## 19. Pager에서 마지막 번호 처리하기
+
+	<c:set var = "page" value = "${(empty param.p)?1:param.p}"/>
+	<c:set var = "startNum" value ="${page - (page-1)%5}" />
+	//substringBefore함수는 구분자를 기준으로 앞에꺼만 살려준다.
+	//count/3의 값이 소숫점이 나오기 때문에
+	// ${}안에 정적인 함수 Math.ceil 사용 가능
+	<c:set var = "lastNum" value ="${fn:substringBefore(Math.ceil(count/3), '.') }" />
+	
+	<ul class="-list- center">
+		<c:forEach var = "i" begin="0" end="4">
+		// 그 후 라스트 넘버와 구현 페이지를 비교해서 출력
+		<c:if test="${startNum+i <= lastNum }">
+		<li><a class="-text- orange bold" href="?p=${startNum+i}&f=${param.f}&q=${param.q }">${startNum+i}</a></li>
+		</c:if> 
+		</c:forEach>		
+	</ul>
+
+## 20. 자세한 페이지 수정하기
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
