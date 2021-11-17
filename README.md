@@ -1588,12 +1588,38 @@ https://mvnrepository.com/artifact/javax.servlet/jstl/1.2 에서 .jar 파일 다
 ## 20. 자세한 페이지 수정하기
 	
 	
+## 21. 목록의 댓글 수 표시
+
+### 21.1 쿼리문
 	
+	// COUNT가 포함된 쿼리문을 만든 후 VIEW 생성
+	// CONTENT를 제외한 이유는 목록 리스트이니 따로 필요없고
+	// 또한 CONTENT의 자료형이 크므로 짤릴 위험이 있어 제외
+	CREATE VIEW NOTICE_VIEW
+	AS
+	SELECT N.ID, N.TITLE, N.WRITER_ID, N.REGDATE, N.HIT, N.FILES,
+	COUNT(C.ID) CMT_COUNT FROM
+	NOTICE N LEFT JOIN "COMMENT" C ON N.ID = C.NOTICE_ID
+	GROUP BY N.ID, N.TITLE, N.WRITER_ID, N.REGDATE, N.HIT, N.FILES;
 	
+	// 그 후 처음에 만들었던 NOTICE로 부터 만들었던 쿼리문을 NOTICE_VIEW로 수정해서 작성
+	SELECT * FROM (
+	SELECT ROWNUM NUM, N.*
+	FROM (SELECT * FROM NOTICE_VIEW WHERE TITLE LIKE '%%' ORDER BY REGDATE DESC) N
+	)
+	WHERE NUM BETWEEN 1 AND 3;	
 	
-	
-	
-	
+
+### 21.2 웹코드 부분
+
+1. 바꾼 쿼리문으로 getNoticeList 쿼리문 변경
+2. 처음 Notice 객체 하나에서 Notice를 상속받아 NoticeView 클래스 생성 후 cmtCount 멤버 변수 추가
+	- NOTICE를 받는 Notice객체, NOTICE_VIEW를 받는 NoticeView객체
+4. NoticeView 생성자의 super()에서 content는 빈문자열 전달 (목록만 나타내니 내용 어차피 필요 없음)
+5. 바꾼 부분과 연관된 부분 NoticeView 로 타입 변경
+
+
+
 	
 	
 	
