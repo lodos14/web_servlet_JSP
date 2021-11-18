@@ -1618,6 +1618,7 @@ https://mvnrepository.com/artifact/javax.servlet/jstl/1.2 에서 .jar 파일 다
 4. NoticeView 생성자의 super()에서 content는 빈문자열 전달 (목록만 나타내니 내용 어차피 필요 없음)
 5. 바꾼 부분과 연관된 부분 NoticeView 로 타입 변경
 
+## 22. 공지사항 관리자 페이지 (Admin)페이지
 
 
 	
